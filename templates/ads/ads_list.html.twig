@@ -1,0 +1,281 @@
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/11.0.2/css/bootstrap-slider.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+    .div_filter {
+        margin-bottom: 10px;
+    }
+    .input-group {
+        width: 100%;
+    }
+    .align-items-center {
+        text-align: center;
+    }
+    .image_div {
+        height: 100%;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+    .ad {
+        height: 200px;
+    }
+    #ads_div_container {
+        padding-left: 35px;
+        padding-right: 35px;
+    }
+    .ad_params {
+        height: 50%;
+        text-align: center;
+        padding: 10px;
+    }
+    .btn_container {
+        justify-content: center;
+        margin-top: 10px;
+    }
+    .modal-backdrop {
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+</style>
+<div class="row" style="margin: 10px">
+    <div class="col-md-12">
+        <button type="button" class="btn btn-primary" id="ad_open_modal_btn">
+            Добавить объявление
+        </button>
+    </div>
+</div>
+<div class="row" style="margin: 10px">
+    <div class="col-md-12">
+        <div class="panel-group" style="margin: 20px">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        Фильтр объявлений
+                    </h4>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-6 div_filter">
+                            <label for="brand">Марка авто:</label>
+                            <select class="form-control form-filter" name="brand" id="brand" style="width: 100%">
+                                <option value="">Неважно</option>
+                                {% for car_brand in cars_brands %}
+                                    <option value="{{ car_brand.brand }}">{{ car_brand.brand }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-xs-12 col-sm-6 div_filter">
+                            <label for="manufacturer">Производитель:</label>
+                            <select class="form-control form-filter" name="manufacturer" id="manufacturer" style="width: 100%">
+                                <option value="">Неважно</option>
+                                {% for car_manufacturer in cars_manufacturer %}
+                                    <option value="{{ car_manufacturer.manufacturer }}">{{ car_manufacturer.manufacturer }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-xs-12 col-sm-6 div_filter">
+                            <label for="color">Цвет:</label>
+                            <select class="form-control form-filter" name="color" id="color" style="width: 100%">
+                                <option value="">Неважно</option>
+                                {% for car_color in cars_color %}
+                                    <option value="{{ car_color.color }}">{{ car_color.color }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-xs-12 col-sm-6 div_filter">
+                            <label for="year">Год авто:</label>
+                            <div class="input-group">
+                                <input class="form-control" id="year" name="year" value="" placeholder="Укажите год авто">
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-6 div_filter">
+                            <label for="mileage">
+                                Пробег от <span id="mileage_from">0</span> до <span id="mileage_to">10000000</span> км
+                            </label><br>
+                            <input id="mileage" type="text" style="width: 100%">
+                        </div>
+                        <div class="col-xs-12 col-sm-6 div_filter">
+                            <label for="cost">
+                                Стоимость от <span id="cost_from">0</span> до <span id="cost_to">10000000</span> рублей
+                            </label><br>
+                            <input id="cost" type="text" style="width: 100%">
+                        </div>
+                    </div>
+                    <div class="row align-items-center">
+                        <button class="btn" type="button" id="get_ads_btn">
+                            Показать
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="row" id="ads_div_container">
+
+        </div>
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="align-items-center" id="ads_loading" style="display: none">
+                    <h3>Идёт загрузка...</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/11.0.2/bootstrap-slider.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+{% include 'ads/modals/add_ad.html.twig' %}
+<script>
+    $(document).ready(function() {
+        $('#brand').select2({
+            closeOnSelect: true,
+            minimumResultsForSearch: 10,
+        });
+        $('#manufacturer').select2({
+            closeOnSelect: true,
+            minimumResultsForSearch: 10,
+        });
+        $('#color').select2({
+            closeOnSelect: true,
+            minimumResultsForSearch: 10,
+        });
+        $("#mileage").slider({
+            min: 0, max: 10000000, value: [0, 10000000], focus: true, step: 10000
+        }).change(function () {
+            let val = $(this).val().split(',');
+            $('#mileage_from').text(val[0]);
+            $('#mileage_to').text(val[1]);
+        });
+        $("#cost").slider({
+            min: 0, max: 10000000, value: [0, 10000000], focus: true, step: 10000
+        }).change(function () {
+            let val = $(this).val().split(',');
+            $('#cost_from').text(val[0]);
+            $('#cost_to').text(val[1]);
+        });
+        $('#get_ads_btn').on('click', function () {getAds()});
+        $('#ad_open_modal_btn').on('click', function () {showAddModal()});
+        getAds();
+    });
+
+    function getAds() {
+        let mileage_array = $('#mileage').val().split(',');
+        let cost_array = $('#cost').val().split(',');
+        let send_data = {
+            'brand': $('#brand').val(),
+            'manufacturer': $('#manufacturer').val(),
+            'color': $('#color').val(),
+            'year': $('#year').val(),
+            'mileage_from': mileage_array[0],
+            'mileage_to': mileage_array[1],
+            'cost_from': cost_array[0],
+            'cost_to': cost_array[1],
+        }
+        let get_ads_btn = $('#get_ads_btn');
+        let ads_loading = $('#ads_loading');
+        let ads_div_container = $('#ads_div_container');
+        $.ajax({
+            type: 'GET',
+            url: '{{ path('ads_list') }}',
+            dataType: 'json',
+            data: send_data,
+            beforeSend: function(data) {
+                get_ads_btn.prop('disabled', true);
+                ads_loading.show();
+                ads_div_container.empty().hide();
+            },
+            success: function(data){
+                data.forEach(function (ad) {
+                    ads_div_container.append(createAdDiv(ad));
+                });
+            },
+            error: function (data) {
+                toastr.error(data.responseJSON.error);
+            },
+            complete: function(data) {
+                get_ads_btn.prop('disabled', false);
+                ads_loading.hide();
+                ads_div_container.show();
+            }
+        });
+    }
+
+    function deleteAd(ad_uuid) {
+        let send_data = {
+            'ad_uuid': ad_uuid,
+        }
+        $.ajax({
+            type: 'DELETE',
+            url: '{{ path('ad_delete') }}',
+            dataType: 'json',
+            data: send_data,
+            beforeSend: function () {
+                $('#' + ad_uuid).find('.delete-btn').hide();
+            },
+            success: function (data){
+                $('#' + data).remove();
+                toastr.success('Объявление успешно удалено');
+            },
+            error: function (data) {
+                $('#' + ad_uuid).find('.delete-btn').show();
+                toastr.error(data.responseJSON.error);
+            },
+            complete: function () {
+                add_ad_btn_loader.hide();
+                change_ad_btn.show();
+            }
+        });
+    }
+
+    function createAdDiv(ad) {
+        let html_div = '<div class="col-xs-12 alert alert-info" id="' + ad.ad_uuid + '">\n' +
+            '                <div class="col-xs-12 col-sm-4 image_div ad" onclick="window.open(\'{{ path('ad_profile', {'ad_uuid': null}) }}\/' + ad.ad_uuid + '\')" style="background-image: url(\'' + ad.avatar + '\')"></div>\n' +
+            '                <div class="col-xs-10 col-sm-7 ad">\n' +
+            '                    <div class="row ad_params">\n' +
+            '                        <div class="col-xs-4">\n' +
+            '                            Марка: <span class="brand">' + ad.brand + '</span>\n' +
+            '                        </div>\n' +
+            '                        <div class="col-xs-4">\n' +
+            '                            Стоимость: <span class="cost">' + ad.cost + '</span>\n' +
+            '                        </div>\n' +
+            '                        <div class="col-xs-4">\n' +
+            '                            Год: <span class="year">' + ad.year + '</span>\n' +
+            '                        </div>\n' +
+            '                    </div>\n' +
+            '                    <div class="row ad_params">\n' +
+            '                        <div class="col-xs-4">\n' +
+            '                            Производитель: <span class="manufacturer">' + ad.manufacturer + '</span>\n' +
+            '                        </div>\n' +
+            '                        <div class="col-xs-4">\n' +
+            '                            Пробег: <span class="mileage">' + ad.mileage + '</span>\n' +
+            '                        </div>\n' +
+            '                        <div class="col-xs-4">\n' +
+            '                            Цвет: <span class="color">' + ad.color + '</span>\n' +
+            '                        </div>\n' +
+            '                    </div>\n' +
+            '                </div>\n' +
+            '                <div class="col-xs-2 col-sm-1 btn_container ad">\n' +
+            '                    <div class="align-items-center">\n' +
+            '                        <button class="btn" type="button" style="margin-bottom: 5px;" onclick="showChangeModal(\'' + ad.ad_uuid + '\')">\n' +
+            '                            <i class="fa fa-edit"></i>\n' +
+            '                        </button><br>\n' +
+            '                        <button class="btn delete-btn" type="button" style="margin-top: 5px; padding-right: 14px; padding-left: 13px;" onclick="deleteAd(\'' + ad.ad_uuid + '\')">\n' +
+            '                            <i class="fa fa-remove"></i>\n' +
+            '                        </button>\n' +
+            '                    </div>\n' +
+            '                </div>\n' +
+            '            </div>'
+        return html_div;
+    }
+</script>
+
+
+

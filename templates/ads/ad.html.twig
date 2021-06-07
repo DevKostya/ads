@@ -1,0 +1,52 @@
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/11.0.2/css/bootstrap-slider.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+    .image_div {
+        height: 100%;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+    .ad {
+        height: 500px;
+    }
+    .ad_params {
+        padding: 20px;
+    }
+    .align-center {
+        display: flex;
+        justify-content: center;
+    }
+</style>
+<div class="row align-center">
+    <div class="col-xs-12 col-sm-10 ad_params">
+        <div class="col-xs-12 alert alert-info">
+            <div class="col-xs-12 col-md-6">
+                <div class="col-xs-6 col-md-12 ad_params">
+                    Модель: {{ ad['brand'] }}
+                </div>
+                <div class="col-xs-6 col-md-12 ad_params">
+                    Стоимость: {{ ad['cost'] }} рублей
+                </div>
+                <div class="col-xs-6 col-md-12 ad_params">
+                    Производитель: {{ ad['manufacturer'] }}
+                </div>
+                <div class="col-xs-6 col-md-12 ad_params">
+                    Год: {{ ad['year'] }}
+                </div>
+                <div class="col-xs-6 col-md-12 ad_params">
+                    Цвет: {{ ad['color'] }}
+                </div>
+                <div class="col-xs-6 col-md-12 ad_params">
+                    Пробег: {{ ad['mileage'] }} км
+                </div>
+            </div>
+            <div class="col-xs-12 col-md-6 image_div ad" style="background-image: url('{{ ad['avatar'] }}')">
+
+            </div>
+        </div>
+    </div>
+</div>

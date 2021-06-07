@@ -1,0 +1,280 @@
+<style>
+    .modal-data {
+        margin-bottom: 10px
+    }
+</style>
+<div class="modal modal-dialog-centered modal-dialog-scrollable" id="add_ad_modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Добавить новое объявление</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-xs-12 alert alert-danger" id="add_ad_modal_error_text" style="display: none">
+
+                    </div>
+                </div>
+                <div class="row">
+                    <input type="hidden" id="modal_ad_uuid" name="modal_ad_uuid" value="">
+                    <div class="col-xs-12 modal-data">
+                        <label for="modal_brand">Марка авто:</label>
+                        <div class="input-group">
+                            <input class="form-control modal-input" id="modal_brand" name="modal_brand" value="" placeholder="Укажите марку авто">
+                        </div>
+                    </div>
+                    <div class="col-xs-12 modal-data">
+                        <label for="modal_cost">Укажите стоимость авто:</label>
+                        <div class="input-group">
+                            <input class="form-control modal-input" id="modal_cost" name="modal_cost" value="0" placeholder="Укажите пробег авто">
+                        </div>
+                    </div>
+                    <div class="col-xs-12 modal-data">
+                        <label for="modal_year">Укажите год авто:</label>
+                        <div class="input-group">
+                            <input class="form-control modal-input" id="modal_year" name="modal_year" value="2000" placeholder="Укажите год авто">
+                        </div>
+                    </div>
+                    <div class="col-xs-12 modal-data">
+                        <label for="modal_manufacturer">Укажите производителя авто:</label>
+                        <div class="input-group">
+                            <input class="form-control modal-input" id="modal_manufacturer" name="modal_manufacturer" value="" placeholder="Укажите производителя авто">
+                        </div>
+                    </div>
+                    <div class="col-xs-12 modal-data">
+                        <label for="modal_color">Укажите цвет авто:</label>
+                        <div class="input-group">
+                            <input class="form-control modal-input" id="modal_color" name="modal_color" value="" placeholder="Укажите цвет авто">
+                        </div>
+                    </div>
+                    <div class="col-xs-12 modal-data">
+                        <label for="modal_mileage">Укажите пробег авто:</label>
+                        <div class="input-group">
+                            <input class="form-control modal-input" id="modal_mileage" name="modal_mileage" value="0" placeholder="Укажите пробег авто">
+                        </div>
+                    </div>
+                    <div class="col-xs-12 modal-data" style="text-align: -webkit-center">
+                        <img src="" id="current_car_photo" style="height: 200px; width: auto; display: none; max-width: 100%;">
+                    </div>
+                    <input type="file" id="car_photo_file" style="display: none" accept="image/jpg, image/jpeg, image/png">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                <button type="button" class="btn btn-primary" id="add_car_avatar_btn">Загрузить аватарку</button>
+                <button type="button" class="btn btn-primary" id="cancel_car_avatar_btn">Отменить</button>
+                <button type="button" class="btn btn-primary" id="add_ad_btn">Добавить</button>
+                <button type="button" class="btn btn-primary" id="change_ad_btn" style="display: none">Изменить</button>
+                <button type="button" class="btn btn-primary" id="add_ad_btn_loader" style="display: none">Сохраняем...</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('#add_ad_btn').click(function () {
+                addAd();
+            })
+            $('#change_ad_btn').click(function () {
+                changeAd();
+            })
+            $('#add_car_avatar_btn').click(function () {
+                uploadCarPhoto();
+            })
+            $('#cancel_car_avatar_btn').click(function () {
+                removeCarPhoto();
+            })
+        });
+
+        let add_ad_modal_error_text = $('#add_ad_modal_error_text');
+        let add_ad_btn = $('#add_ad_btn');
+        let change_ad_btn = $('#change_ad_btn');
+        let add_ad_btn_loader = $('#add_ad_btn_loader');
+        let add_ad_modal = $('#add_ad_modal');
+
+        function setDefaultValues() {
+            $('#modal_brand').val('');
+            $('#modal_cost').val(0);
+            $('#modal_year').val(2000);
+            $('#modal_manufacturer').val('');
+            $('#modal_color').val('');
+            $('#modal_mileage').val(0);
+            removeCarPhoto();
+        }
+
+        function showAddModal() {
+            setDefaultValues();
+            add_ad_modal.modal('show');
+            $('#modal_ad_uuid').val();
+            add_ad_btn.show();
+            change_ad_btn.hide();
+            add_ad_modal_error_text.html('').hide();
+            $('.modal-input').css('border-color', '');
+        }
+
+        function showChangeModal(ad_uuid) {
+            setDefaultValues();
+            add_ad_modal.modal('show');
+            add_ad_btn.hide();
+            change_ad_btn.show();
+            add_ad_modal_error_text.html('').hide();
+            $('.modal-input').css('border-color', '');
+            $('#modal_ad_uuid').val(ad_uuid);
+            let current_div = $('#' + ad_uuid);
+            $('#modal_brand').val(current_div.find('.brand').html());
+            $('#modal_cost').val(current_div.find('.cost').html());
+            $('#modal_year').val(current_div.find('.year').html());
+            $('#modal_manufacturer').val(current_div.find('.manufacturer').html());
+            $('#modal_color').val(current_div.find('.color').html());
+            $('#modal_mileage').val(current_div.find('.mileage').html());
+        }
+
+        function addAd() {
+            let send_data = new FormData();
+            if (car_photo_file.prop('files')[0]) {
+                send_data.append('avatar', car_photo_file.prop('files')[0]);
+            }
+            send_data.append('brand', $('#modal_brand').val());
+            send_data.append('cost', $('#modal_cost').val());
+            send_data.append('year', $('#modal_year').val());
+            send_data.append('manufacturer', $('#modal_manufacturer').val());
+            send_data.append('color', $('#modal_color').val());
+            send_data.append('mileage', $('#modal_mileage').val());
+            $.ajax({
+                type: 'POST',
+                url: '{{ path('ad_add') }}',
+                dataType: 'json',
+                data: send_data,
+                contentType: false,
+                processData: false,
+                beforeSend: function () {
+                    add_ad_modal_error_text.html('').hide();
+                    $('.modal-input').css('border-color', '');
+                    add_ad_btn_loader.show();
+                    add_ad_btn.hide();
+                },
+                success: function (data){
+                    $('#ads_div_container').append(createAdDiv(data));
+                    setDefaultValues();
+                    add_ad_modal.modal('hide');
+                    toastr.success('Объявление успешно добавлено');
+                },
+                error: function (data) {
+                    let error_text = '';
+                    if (Object.keys(data.responseJSON.error).length > 1 || !data.responseJSON.error[0]) {
+                        for (let error_label in data.responseJSON.error) {
+                            if (data.responseJSON.error[error_label]) {
+                                error_text += data.responseJSON.error[error_label] + '<br>';
+                            }
+                            $('#modal_' + error_label).css('border-color', 'red');
+                        }
+                    } else {
+                        error_text += data.responseJSON.error;
+                    }
+                    add_ad_modal_error_text.html(error_text).show();
+                },
+                complete: function () {
+                    add_ad_btn_loader.hide();
+                    add_ad_btn.show();
+                }
+            });
+        }
+
+        function changeAd() {
+            let send_data = new FormData();
+            send_data.append('ad_uuid', $('#modal_ad_uuid').val());
+            send_data.append('brand', $('#modal_brand').val());
+            send_data.append('cost', $('#modal_cost').val());
+            send_data.append('year', $('#modal_year').val());
+            send_data.append('manufacturer', $('#modal_manufacturer').val());
+            send_data.append('color', $('#modal_color').val());
+            send_data.append('mileage', $('#modal_mileage').val());
+            if (car_photo_file.prop('files')[0]) {
+                send_data.append('avatar', car_photo_file.prop('files')[0]);
+            }
+            $.ajax({
+                type: 'POST',
+                url: '{{ path('ad_change') }}',
+                dataType: 'json',
+                data: send_data,
+                contentType: false,
+                processData: false,
+                beforeSend: function () {
+                    add_ad_modal_error_text.html('').hide();
+                    $('.modal-input').css('border-color', '');
+                    add_ad_btn_loader.show();
+                    change_ad_btn.hide();
+                },
+                success: function (data){
+                    let current_div = $('#' + data.ad_uuid);
+                    current_div.find('.brand').html(data.brand);
+                    current_div.find('.cost').html(data.cost);
+                    current_div.find('.year').html(data.year);
+                    current_div.find('.manufacturer').html(data.manufacturer);
+                    current_div.find('.color').html(data.color);
+                    current_div.find('.mileage').html(data.mileage);
+                    add_ad_modal.modal('hide');
+                    toastr.success('Объявление успешно изменено');
+                },
+                error: function (data) {
+                    let error_text = '';
+                    if (Object.keys(data.responseJSON.error).length > 1 || !data.responseJSON.error[0]) {
+                        for (let error_label in data.responseJSON.error) {
+                            if (data.responseJSON.error[error_label]) {
+                                error_text += data.responseJSON.error[error_label] + '<br>';
+                            }
+                            $('#modal_' + error_label).css('border-color', 'red');
+                        }
+                    } else {
+                        error_text += data.responseJSON.error;
+                    }
+                    add_ad_modal_error_text.html(error_text).show();
+                },
+                complete: function () {
+                    add_ad_btn_loader.hide();
+                    change_ad_btn.show();
+                }
+            });
+        }
+
+        let car_photo_file = $('#car_photo_file');
+        let current_car_photo = $('#current_car_photo');
+
+        function uploadCarPhoto() {
+            car_photo_file.click();
+        }
+
+        car_photo_file.change(function () {
+            if ($(this).val()) {
+                $('#add_car_avatar_btn').hide();
+                $('#cancel_car_avatar_btn').show()
+                readURL(this);
+            } else {
+                $('#add_car_avatar_btn').show();
+                $('#cancel_car_avatar_btn').hide();
+                current_car_photo.hide();
+            }
+        });
+
+        function readURL(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    current_car_photo.show();
+                    current_car_photo.attr('src', e.target.result);
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function removeCarPhoto() {
+            if (car_photo_file.val()) {
+                car_photo_file.val('');
+                current_car_photo.attr('src','');
+            }
+            car_photo_file.change();
+        }
+    </script>
+</div>
